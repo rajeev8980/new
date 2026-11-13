@@ -20,9 +20,14 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
   } catch {
     throw new Error("Can’t reach New right now.");
   }
-  const data = (await response.json().catch(() => ({}))) as T & { error?: string };
+  const data = (await response.json().catch(() => null)) as (T & { error?: string }) | null;
+  if (!data) throw new Error("Can’t reach New right now.");
   if (!response.ok) throw new Error(data.error || "Something went wrong.");
   return data;
+}
+
+export function isOffline(err: unknown) {
+  return err instanceof Error && err.message.includes("reach New");
 }
 
 export const api = {

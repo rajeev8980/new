@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "../api";
+import { api, isOffline } from "../api";
 import { Header, IconButton, Sheet, StatusBar } from "../components";
 import { AppleMark, FacebookMark, GoogleMark, Icon, Logo } from "../icons";
 import { useApp } from "../state";
@@ -98,6 +98,11 @@ export function SignIn() {
     try {
       enter(await api.signin(id, pw));
     } catch (err) {
+      if (isOffline(err)) {
+        notify("Demo mode. This phone can’t reach the server.");
+        enter();
+        return;
+      }
       setError(err instanceof Error ? err.message : "Sign in failed.");
     }
   }
@@ -108,6 +113,11 @@ export function SignIn() {
       try {
         enter(await api.social(name));
       } catch (err) {
+        if (isOffline(err)) {
+          notify("Demo mode. This phone can’t reach the server.");
+          enter();
+          return;
+        }
         setSocial("");
         setError(err instanceof Error ? err.message : "Sign in failed.");
       }
@@ -240,7 +250,7 @@ function Forgot({
 }
 
 export function SignUp() {
-  const { enter, setAuthScreen } = useApp();
+  const { enter, setAuthScreen, notify } = useApp();
   const [name, setName] = useState("");
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
@@ -264,6 +274,11 @@ export function SignUp() {
           try {
             enter(await api.signup(name, id, pw));
           } catch (err) {
+            if (isOffline(err)) {
+              notify("Demo mode. This phone can’t reach the server.");
+              enter();
+              return;
+            }
             setError(err instanceof Error ? err.message : "Couldn’t create the account.");
           }
         }}
